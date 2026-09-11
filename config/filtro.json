@@ -1,0 +1,202 @@
+[
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "42091996",
+    "digito": "0",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 5,
+    "timestamp_primer_ingreso": 1789037537.3532834,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "31767932",
+    "digito": "2",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 5,
+    "timestamp_primer_ingreso": 1789073201.4040663,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "31658492",
+    "digito": "1",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 5,
+    "timestamp_primer_ingreso": 1789075739.603882,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "76385318",
+    "digito": "2",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 1789098062.921131,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "76429934",
+    "digito": "1",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "75995500",
+    "digito": "1",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "76080254",
+    "digito": "4",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "77241440",
+    "digito": "0",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "76757084",
+    "digito": "3",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "77918461",
+    "digito": "2",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "74637208",
+    "digito": "1",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "76429934",
+    "digito": "1",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "75995500",
+    "digito": "1",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "76080254",
+    "digito": "4",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "77241440",
+    "digito": "0",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "76757084",
+    "digito": "3",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "77918461",
+    "digito": "2",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "74637208",
+    "digito": "1",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "76080254",
+    "digito": "4",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  },
+  {
+    "nombre_registrado": "DANTE VIRGILIO MANRIQUE ORELLANO",
+    "dni": "77241440",
+    "digito": "0",
+    "fecha_nacimiento": "30061982",
+    "fecha_emision": "30061982",
+    "ingresos_ciclo": 1,
+    "timestamp_primer_ingreso": 0,
+    "fecha_ciclo": "2026-09-10"
+  }
+]
