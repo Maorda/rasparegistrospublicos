@@ -35,7 +35,7 @@
     "digito": "2",
     "fecha_nacimiento": "30061982",
     "fecha_emision": "30061982",
-    "ingresos_ciclo": 1,
+    "ingresos_ciclo": 5,
     "timestamp_primer_ingreso": 1789098062.921131,
     "fecha_ciclo": "2026-09-10"
   },
@@ -45,8 +45,8 @@
     "digito": "1",
     "fecha_nacimiento": "30061982",
     "fecha_emision": "30061982",
-    "ingresos_ciclo": 1,
-    "timestamp_primer_ingreso": 0,
+    "ingresos_ciclo": 2,
+    "timestamp_primer_ingreso": 1789100025.231629,
     "fecha_ciclo": "2026-09-10"
   },
   {

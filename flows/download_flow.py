@@ -1,5 +1,5 @@
 # Ruta: flows/download_flow.py
-"""Flujo de negocio para descargar PDFs, consolidarlos en un único archivo binario usando fitz y regresar."""
+"""Flujo de negocio para descargar PDFs, consolidarlos en un único archivo binario usando fitz y regresar apuntando al ojo de previsualización."""
 
 import asyncio
 import glob
@@ -10,15 +10,46 @@ import nodriver as uc
 from core.human_actions import human_click, wait_for_spinner_to_close
 
 
+async def safe_rename(src: str, dst: str, retries: int = 10, delay: float = 0.5) -> bool:
+    """Intenta renombrar un archivo con reintentos para evitar bloqueos de I/O en Windows (PermissionError)."""
+    for _ in range(retries):
+        try:
+            if os.path.exists(dst):
+                os.remove(dst)
+            os.rename(src, dst)
+            return True
+        except PermissionError:
+            # El navegador todavía tiene el archivo abierto escribiendo los bytes en el disco
+            await asyncio.sleep(delay)
+        except FileNotFoundError:
+            return False
+    return False
+
+
 async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
     """Ejecuta la descarga secuencial de asientos y los consolida bajo el nombre único 'sunarp_[expediente].pdf'."""
-    btn_search = await page.select("button.btn-search")
-    # CORREGIDO: Firma de función limpia sin pasar 'page'
+    
+    print("[INFO] Localizando el botón del icono del OJO en la columna PREVISUALIZA...")
+    btn_search = None
+    try:
+        btn_search = await page.select('button:has(.anticon-eye), button[title*="Previsualiza"], button.btn-search:not([title*="Resumen"]) i.icon-view', timeout=10.0)
+    except asyncio.TimeoutError:
+        pass
+    
+    # Fallback de respaldo estructural por si el DOM de Angular parpadea tras el renderizado
+    if not btn_search:
+        try:
+            btn_search = await page.select('button .anticon-eye', timeout=5.0)
+        except asyncio.TimeoutError:
+            raise RuntimeError("No se encontró el botón de previsualización (Ojo) en el DOM.")
+
+    # CORREGIDO: Firma de función limpia sin pasar 'page' para evitar un TypeError fulminante
     await human_click(btn_search)
     await wait_for_spinner_to_close(page, selector=".ant-spin, .ant-btn-loading", timeout=15.0)
 
     botones_pagina = await page.select_all(".columna-lista .boton-pagina")
     download_dir = os.path.abspath("./downloads")
+    os.makedirs(download_dir, exist_ok=True) # Garantizar que la carpeta exista
 
     # Limpiamos caracteres prohibidos del nombre del expediente para evitar errores en Windows
     safe_expediente = expediente_str.replace("/", "_").replace("\\", "_").replace(":", "_")
@@ -35,7 +66,7 @@ async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
 
     for index, btn_pagina in enumerate(botones_pagina):
         try:
-            # Capturamos el estado de la carpeta antes de accionar la descarga (excluyendo temporales previos)
+            # Capturamos el estado de la carpeta ANTES (sin incluir descargas previas ni temporales)
             archivos_antes = set(
                 f for f in glob.glob(os.path.join(download_dir, "*.pdf"))
                 if not os.path.basename(f).startswith(("temp_", "sunarp_"))
@@ -46,36 +77,47 @@ async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
             await wait_for_spinner_to_close(page, selector=".ant-spin, .ant-btn-loading, .swal2-loading", timeout=8.0)
 
             btn_download = await page.select("button#download")
-            # CORREGIDO: Firma de función limpia sin pasar 'page'
-            await human_click(btn_download)
+            if btn_download:
+                # CORREGIDO: Firma de función limpia sin pasar 'page'
+                await human_click(btn_download)
+            else:
+                print(f"[WARNING] Botón de descarga no encontrado en el asiento {index}.")
+                continue
 
-            # Esperamos de forma elástica a que aparezca el nuevo archivo PDF descargado por Chrome
+            # Bucle elástico mejorado
             nuevo_archivo = None
-            timeout_archivo = time.monotonic() + 12.0
+            timeout_archivo = time.monotonic() + 15.0
+            
             while time.monotonic() < timeout_archivo:
                 await asyncio.sleep(0.5)
+                # Chrome usa extensiones .crdownload o .tmp mientras descarga.
+                # Al filtrar por *.pdf, el archivo solo aparecerá aquí cuando cambie de extensión de forma limpia.
                 archivos_despues = set(
                     f for f in glob.glob(os.path.join(download_dir, "*.pdf"))
                     if not os.path.basename(f).startswith(("temp_", "sunarp_"))
                 )
+                
                 diferencia = archivos_despues - archivos_antes
                 if diferencia:
-                    lista_dif = list(diferencia)
-                    # CORREGIDO: Evaluación de extensión segura apuntando al índice 0 de la lista
-                    if lista_dif and not lista_dif[0].endswith(".crdownload") and os.path.exists(lista_dif[0]):
-                        nuevo_archivo = lista_dif[0]
+                    archivo_detectado = list(diferencia)[0]
+                    # Verificación doble de estabilidad de escritura
+                    if os.path.exists(archivo_detectado) and not archivo_detectado.endswith('.crdownload'):
+                        nuevo_archivo = archivo_detectado
                         break
 
             if nuevo_archivo:
-                # Guardamos la ruta temporal del asiento descargado para consolidarlo al final
                 nombre_temporal_asiento = os.path.join(download_dir, f"temp_{safe_expediente}_{index}.pdf")
-                if os.path.exists(nombre_temporal_asiento):
-                    os.remove(nombre_temporal_asiento)
-                os.rename(nuevo_archivo, nombre_temporal_asiento)
-                archivos_descargados_ciclo.append(nombre_temporal_asiento)
+                
+                # Intentamos renombrar de forma segura (tolerante a bloqueos de Windows)
+                renombrado_ok = await safe_rename(nuevo_archivo, nombre_temporal_asiento)
+                
+                if renombrado_ok:
+                    archivos_descargados_ciclo.append(nombre_temporal_asiento)
+                else:
+                    print(f"[ERROR] No se pudo liberar/renombrar el archivo: {nuevo_archivo}")
 
         except Exception as e:
-            print(f"[WARNING] Percance menor en página del asiento, continuando: {str(e)}")
+            print(f"[WARNING] Percance menor en página del asiento {index}, continuando: {str(e)}")
             continue
 
     # PROCESO DE CONSOLIDACIÓN AUTOMÁTICA EN UN SOLO PDF ÚNICO
@@ -83,9 +125,9 @@ async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
         print(f"[SISTEMA] Combinando {len(archivos_descargados_ciclo)} asientos descargados bajo el formato final...")
 
         if len(archivos_descargados_ciclo) == 1:
-            os.rename(archivos_descargados_ciclo[0], nombre_final_unico)
+            await safe_rename(archivos_descargados_ciclo[0], nombre_final_unico)
         else:
-            # Fusión real de múltiples PDFs usando PyMuPDF
+            # Fusión real de múltiples PDFs usando PyMuPDF (fitz)
             doc_final = fitz.open()
             for pdf_temp in archivos_descargados_ciclo:
                 try:
@@ -106,6 +148,8 @@ async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
                     pass
 
         print(f"[SISTEMA] Archivo final guardado perfectamente como: {os.path.basename(nombre_final_unico)}")
+    else:
+        print("[WARNING] No se descargó ningún asiento exitosamente.")
 
     print("[INFO] Finalizadas las descargas del expediente. Limpiando foco del visor de PDF...")
     await asyncio.sleep(1.5)
@@ -113,12 +157,12 @@ async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
     await asyncio.sleep(0.5)
 
     print("[INFO] Presionando el botón 'Regresar' oficial para reiniciar los 9 min de sesión...")
-    btn_regresar = await page.select("button.btn-logout", timeout=5.0)
-
-    if btn_regresar:
+    try:
+        btn_regresar = await page.select("button.btn-logout", timeout=5.0)
         # CORREGIDO: Firma de función limpia sin pasar 'page'
         await human_click(btn_regresar)
-    else:
+    except asyncio.TimeoutError:
+        print("[INFO] Botón regresar no encontrado, forzando retroceso en historial (History Back)...")
         await page.evaluate("window.history.back();")
 
     await wait_for_spinner_to_close(page, selector=".ant-spin, .ant-btn-loading", timeout=12.0)
