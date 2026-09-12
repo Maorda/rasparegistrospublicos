@@ -43,19 +43,26 @@ async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
         except asyncio.TimeoutError:
             raise RuntimeError("No se encontró el botón de previsualización (Ojo) en el DOM.")
 
-    # CORREGIDO: Firma de función limpia sin pasar 'page' para evitar un TypeError fulminante
+    # Firma de función limpia según el core del usuario
     await human_click(btn_search)
     await wait_for_spinner_to_close(page, selector=".ant-spin, .ant-btn-loading", timeout=15.0)
 
+    print("[INFO] Esperando el renderizado de la lista de asientos en la barra lateral...")
+    try:
+        await page.wait_for(".columna-lista", timeout=8.0)
+    except Exception:
+        await asyncio.sleep(2.0)
+
+    # Obtenemos la cantidad de botones para iterar (evita guardar los nodos en memoria para prevenir Stale Elements)
     botones_pagina = await page.select_all(".columna-lista .boton-pagina")
+    total_asientos = len(botones_pagina)
+    
     download_dir = os.path.abspath("./downloads")
-    os.makedirs(download_dir, exist_ok=True) # Garantizar que la carpeta exista
+    os.makedirs(download_dir, exist_ok=True)
 
-    # Limpiamos caracteres prohibidos del nombre del expediente para evitar errores en Windows
     safe_expediente = expediente_str.replace("/", "_").replace("\\", "_").replace(":", "_")
-
-    # Nombre final exacto solicitado
     nombre_final_unico = os.path.join(download_dir, f"sunarp_{safe_expediente}.pdf")
+    
     if os.path.exists(nombre_final_unico):
         try:
             os.remove(nombre_final_unico)
@@ -64,70 +71,74 @@ async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
 
     archivos_descargados_ciclo = []
 
-    for index, btn_pagina in enumerate(botones_pagina):
+    for index in range(total_asientos):
         try:
-            # Capturamos el estado de la carpeta ANTES (sin incluir descargas previas ni temporales)
+            # Recapturamos dinámicamente el botón para evitar que Angular rompa la referencia DOM
+            botones_actualizados = await page.select_all(".columna-lista .boton-pagina")
+            if index >= len(botones_actualizados):
+                print(f"[WARNING] El asiento índice {index} desapareció del DOM inesperadamente.")
+                break
+                
+            btn_pagina = botones_actualizados[index]
+            
+            # Estado del directorio ANTES de la descarga
             archivos_antes = set(
                 f for f in glob.glob(os.path.join(download_dir, "*.pdf"))
                 if not os.path.basename(f).startswith(("temp_", "sunarp_"))
             )
 
-            # CORREGIDO: Firma de función limpia sin pasar 'page'
             await human_click(btn_pagina)
             await wait_for_spinner_to_close(page, selector=".ant-spin, .ant-btn-loading, .swal2-loading", timeout=8.0)
 
             btn_download = await page.select("button#download")
             if btn_download:
-                # CORREGIDO: Firma de función limpia sin pasar 'page'
                 await human_click(btn_download)
             else:
                 print(f"[WARNING] Botón de descarga no encontrado en el asiento {index}.")
                 continue
 
-            # Bucle elástico mejorado
+            # Bucle elástico de monitoreo de archivos
             nuevo_archivo = None
             timeout_archivo = time.monotonic() + 15.0
             
             while time.monotonic() < timeout_archivo:
                 await asyncio.sleep(0.5)
-                # Chrome usa extensiones .crdownload o .tmp mientras descarga.
-                # Al filtrar por *.pdf, el archivo solo aparecerá aquí cuando cambie de extensión de forma limpia.
+                # Solo captura PDFs finalizados. Chrome elimina la extensión .crdownload al terminar.
                 archivos_despues = set(
                     f for f in glob.glob(os.path.join(download_dir, "*.pdf"))
                     if not os.path.basename(f).startswith(("temp_", "sunarp_"))
                 )
                 
                 diferencia = archivos_despues - archivos_antes
+                # CORREGIDO: Desempaquetado seguro protegiendo la conversión contra IndexError
                 if diferencia:
-                    archivo_detectado = list(diferencia)[0]
-                    # Verificación doble de estabilidad de escritura
-                    if os.path.exists(archivo_detectado) and not archivo_detectado.endswith('.crdownload'):
-                        nuevo_archivo = archivo_detectado
-                        break
+                    lista_dif = list(diferencia)
+                    if lista_dif and os.path.exists(lista_dif[0]):
+                        nuevo_archivo = lista_dif[0]
+                        break  # Archivo PDF detectado de forma exitosa
 
             if nuevo_archivo:
                 nombre_temporal_asiento = os.path.join(download_dir, f"temp_{safe_expediente}_{index}.pdf")
-                
-                # Intentamos renombrar de forma segura (tolerante a bloqueos de Windows)
                 renombrado_ok = await safe_rename(nuevo_archivo, nombre_temporal_asiento)
                 
                 if renombrado_ok:
                     archivos_descargados_ciclo.append(nombre_temporal_asiento)
                 else:
                     print(f"[ERROR] No se pudo liberar/renombrar el archivo: {nuevo_archivo}")
+            else:
+                print(f"[ERROR] Timeout agotado (15s). Chrome no terminó de descargar el asiento {index}.")
 
         except Exception as e:
             print(f"[WARNING] Percance menor en página del asiento {index}, continuando: {str(e)}")
             continue
 
-    # PROCESO DE CONSOLIDACIÓN AUTOMÁTICA EN UN SOLO PDF ÚNICO
+    # PROCESO DE CONSOLIDACIÓN AUTOMÁTICA
     if archivos_descargados_ciclo:
-        print(f"[SISTEMA] Combinando {len(archivos_descargados_ciclo)} asientos descargados bajo el formato final...")
+        print(f"[SISTEMA] Combinando {len(archivos_descargados_ciclo)} asientos descargados...")
 
         if len(archivos_descargados_ciclo) == 1:
             await safe_rename(archivos_descargados_ciclo[0], nombre_final_unico)
         else:
-            # Fusión real de múltiples PDFs usando PyMuPDF (fitz)
             doc_final = fitz.open()
             for pdf_temp in archivos_descargados_ciclo:
                 try:
@@ -139,7 +150,6 @@ async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
             doc_final.save(nombre_final_unico)
             doc_final.close()
 
-            # Limpieza de archivos temporales individuales
             for temp_file in archivos_descargados_ciclo:
                 try:
                     if os.path.exists(temp_file):
@@ -151,18 +161,20 @@ async def run_download_flow(page: uc.Tab, expediente_str: str) -> None:
     else:
         print("[WARNING] No se descargó ningún asiento exitosamente.")
 
-    print("[INFO] Finalizadas las descargas del expediente. Limpiando foco del visor de PDF...")
+    print("[INFO] Finalizadas las descargas. Limpiando foco del visor de PDF...")
     await asyncio.sleep(1.5)
     await page.evaluate("window.focus(); document.body.focus();")
     await asyncio.sleep(0.5)
 
-    print("[INFO] Presionando el botón 'Regresar' oficial para reiniciar los 9 min de sesión...")
+    print("[INFO] Presionando el botón 'Regresar' oficial...")
     try:
         btn_regresar = await page.select("button.btn-logout", timeout=5.0)
-        # CORREGIDO: Firma de función limpia sin pasar 'page'
-        await human_click(btn_regresar)
-    except asyncio.TimeoutError:
-        print("[INFO] Botón regresar no encontrado, forzando retroceso en historial (History Back)...")
+        if btn_regresar:
+            await human_click(btn_regresar)
+        else:
+            raise ValueError("Selector devolvió None")
+    except (asyncio.TimeoutError, ValueError):
+        print("[INFO] Botón regresar no encontrado, forzando retroceso (History Back)...")
         await page.evaluate("window.history.back();")
 
     await wait_for_spinner_to_close(page, selector=".ant-spin, .ant-btn-loading", timeout=12.0)

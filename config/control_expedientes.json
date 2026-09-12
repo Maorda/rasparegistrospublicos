@@ -1,14 +1,14 @@
 {
   "00229-2021-0-0302-JR-CI-01": {
     "partida": "40001133",
-    "estado": "PROCESADO",
+    "estado": "PENDIENTE",
     "observaciones": "Descarga completada con éxito.",
-    "updated_at": "2026-09-10T23:15:11.116281"
+    "updated_at": "2026-09-10T23:25:47.673476"
   },
   "00032-2025-0-1411-JR-CI-01": {
     "partida": "P22015779",
-    "estado": "PROCESADO",
+    "estado": "PENDIENTE",
     "observaciones": "Descarga completada con éxito.",
-    "updated_at": "2026-09-10T23:16:35.396936"
+    "updated_at": "2026-09-10T23:26:23.302474"
   }
 }
