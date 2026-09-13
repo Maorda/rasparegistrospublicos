@@ -1,14 +1,26 @@
 {
-  "00229-2021-0-0302-JR-CI-01": {
-    "partida": "40001133",
+  "00025-2023-0-3409-JP-CO-01": {
+    "partida": "11096611",
     "estado": "PENDIENTE",
     "observaciones": "Descarga completada con éxito.",
-    "updated_at": "2026-09-10T23:25:47.673476"
+    "updated_at": ""
+  },
+  "00005-2025-0-3408-JR-CO-01": {
+    "partida": "11076862",
+    "estado": "PENDIENTE",
+    "observaciones": "Descarga completada con éxito.",
+    "updated_at": ""
+  },
+  "00229-2021-0-0302-JR-CI-01": {
+    "partida": "40001133",
+    "estado": "PROCESADO",
+    "observaciones": "Descarga completada con éxito.",
+    "updated_at": "2026-09-13T06:21:02.269474"
   },
   "00032-2025-0-1411-JR-CI-01": {
     "partida": "P22015779",
-    "estado": "PENDIENTE",
+    "estado": "PROCESADO",
     "observaciones": "Descarga completada con éxito.",
-    "updated_at": "2026-09-10T23:26:23.302474"
+    "updated_at": "2026-09-13T06:21:27.421954"
   }
 }
