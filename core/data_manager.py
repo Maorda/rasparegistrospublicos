@@ -148,3 +148,23 @@ def increment_credential_intents(dni: str) -> None:
     if updated:
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(credentials, f, indent=2, ensure_ascii=False)
+
+def force_disable_credential(dni: str) -> None:
+    """Inhabilita un DNI de forma forzada marcando sus intentos diarios
+    al máximo permitido (5) en el archivo local de configuración filtro.json.
+    """
+    import os
+    import json
+    
+    filtro_file = os.path.join("config", "filtro.json")
+    with open(filtro_file, "r", encoding="utf-8") as f:
+        creds = json.load(f)
+        
+    for c in creds:
+        if str(c["dni"]) == str(dni):
+            c["ingresos_ciclo"] = 5
+            break
+            
+    # Escritura segura y atómica (sobrescribir todo el archivo desde cero)
+    with open(filtro_file, "w", encoding="utf-8") as f:
+        json.dump(creds, f, indent=2, ensure_ascii=False)
